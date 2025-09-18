@@ -10,24 +10,73 @@ class SearchTests(TestCase):
         self.manufacturer1 = Manufacturer.objects.create(
             name="Test Manufacturer", country="USA"
         )
-        self.car = Car.objects.create(model="Test Car",
-                                      manufacturer=self.manufacturer1)
-        self.user = get_user_model().objects.create_user(
-            username="Test User", email="test@mail.com", password="test1234!"
+
+        self.manufacturer2 = Manufacturer.objects.create(
+            name="Another Manufacturer", country="USA"
         )
-        self.client.force_login(self.user)
+
+        self.car1 = Car.objects.create(
+            model="Test Car", manufacturer=self.manufacturer1
+        )
+        self.car2 = Car.objects.create(
+            model="Another Car", manufacturer=self.manufacturer2
+        )
+
+        self.user1 = get_user_model().objects.create_user(
+            username="Test User",
+            email="test2@mail.com",
+            password="test1234!",
+            license_number="CLA12345",
+        )
+        self.user2 = get_user_model().objects.create_user(
+            username="Another User",
+            email="test2@mail.com",
+            password="test12345!",
+            license_number="CLA12346",
+        )
+
+        self.client.force_login(self.user1)
+        self.client.force_login(self.user2)
 
     def test_manufacturer_name_search(self):
         url = reverse("taxi:manufacturer-list")
-        response = self.client.get(url, {"query": "Test Manufacturer"})
+        response = self.client.get(url, {"name": "Test Manufacturer"})
+        self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Test Manufacturer")
+        self.assertNotEqual(response, "Another Manufacturer")
+
+    def test_manufacturer_name_search_with_no_data(self):
+        url = reverse("taxi:manufacturer-list")
+        response = self.client.get(url, {"name": ""})
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Test Manufacturer")
+        self.assertContains(response, "Another Manufacturer")
 
     def test_car_model_search(self):
         url = reverse("taxi:car-list")
-        response = self.client.get(url, {"query": "Test Car"})
+        response = self.client.get(url, {"model": "Test Car"})
+        self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Test Car")
+        self.assertNotEqual(response, "Another Car")
+
+    def test_car_model_search_with_no_data(self):
+        url = reverse("taxi:car-list")
+        response = self.client.get(url, {"model": ""})
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Test Car")
+        self.assertContains(response, "Another Car")
 
     def test_driver_username_search(self):
         url = reverse("taxi:driver-list")
-        response = self.client.get(url, {"query": "Test User"})
+        response = self.client.get(url, {"username": "Test User"})
+        self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Test User")
+        self.assertNotEqual(response, "Another User")
+
+    def test_driver_username_search_with_no_search_data(self):
+        url = reverse("taxi:driver-list")
+        response = self.client.get(url, {"username": ""})
+        self.assertEqual(response.status_code, 200)
+
+        self.assertContains(response, "Test User")
+        self.assertContains(response, "Another User")
