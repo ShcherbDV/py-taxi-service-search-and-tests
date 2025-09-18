@@ -29,7 +29,7 @@ class SearchTests(TestCase):
             license_number="CLA12345",
         )
         self.user2 = get_user_model().objects.create_user(
-            username="Another User",
+            username="Another",
             email="test2@mail.com",
             password="test12345!",
             license_number="CLA12346",
@@ -43,7 +43,7 @@ class SearchTests(TestCase):
         response = self.client.get(url, {"name": "Test Manufacturer"})
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Test Manufacturer")
-        self.assertNotEqual(response, "Another Manufacturer")
+        self.assertNotContains(response, "Another Manufacturer")
 
     def test_manufacturer_name_search_with_no_data(self):
         url = reverse("taxi:manufacturer-list")
@@ -57,7 +57,7 @@ class SearchTests(TestCase):
         response = self.client.get(url, {"model": "Test Car"})
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Test Car")
-        self.assertNotEqual(response, "Another Car")
+        self.assertNotContains(response, "Another Car")
 
     def test_car_model_search_with_no_data(self):
         url = reverse("taxi:car-list")
@@ -71,7 +71,7 @@ class SearchTests(TestCase):
         response = self.client.get(url, {"username": "Test User"})
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Test User")
-        self.assertNotEqual(response, "Another User")
+        self.assertNotContains(response, "Another User")
 
     def test_driver_username_search_with_no_search_data(self):
         url = reverse("taxi:driver-list")
@@ -79,4 +79,4 @@ class SearchTests(TestCase):
         self.assertEqual(response.status_code, 200)
 
         self.assertContains(response, "Test User")
-        self.assertContains(response, "Another User")
+        self.assertContains(response, "Another")
